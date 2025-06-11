@@ -1,36 +1,22 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint,request,jsonify
 from flask_jwt_extended import jwt_required
-from app.models import Observation
 from app import db
+from app.models import Observation
 
-obs_bp = Blueprint('observations', __name__)
+obs_bp=Blueprint('obs',__name__)
 
-@obs_bp.route('', methods=['GET'])
+@obs_bp.route('',methods=['GET'])
 @jwt_required()
-def list_obs():
-    data = Observation.query.all()
-    return jsonify([
-        {
-            'id': o.id,
-            'species_id': o.species_id,
-            'latitude': o.latitude,
-            'longitude': o.longitude,
-            'observed_at': o.observed_at.isoformat(),
-            'notes': o.notes
-        } for o in data
-    ]), 200
+def get_obs():
+    args=request.args
+    q=Observation.query
+    if args.get('species'): q=q.filter_by(species_id=int(args['species']))
+    if args.get('from'): q=q.filter(Observation.observed_at>=args['from'])
+    data=q.all()
+    return jsonify([{'id':o.id,'species_id':o.species_id,'lat':o.latitude,'lng':o.longitude,'observed_at':o.observed_at.isoformat(),'notes':o.notes} for o in data])
 
-@obs_bp.route('', methods=['POST'])
+@obs_bp.route('',methods=['POST'])
 @jwt_required()
 def add_obs():
-    payload = request.get_json()
-    o = Observation(
-        species_id=payload['species_id'],
-        latitude=payload['latitude'],
-        longitude=payload['longitude'],
-        observed_at=payload.get('observed_at'),
-        notes=payload.get('notes', '')
-    )
-    db.session.add(o)
-    db.session.commit()
-    return jsonify({'msg': 'Observation added', 'id': o.id}), 201
+    d=request.get_json();o=Observation(**d)
+    db.session.add(o);db.session.commit();return jsonify(id=o.id),201

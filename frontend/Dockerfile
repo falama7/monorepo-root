@@ -1,6 +1,13 @@
 FROM node:16-alpine
 WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+
+# Copier uniquement package.json
+COPY package.json ./
+
+# Installer les dépendances (incluant react-scripts) sans lockfile
+RUN npm install
+
+# Copier le reste du code
 COPY . ./
-CMD ["yarn", "start"]
+
+CMD ["npm","start"]
