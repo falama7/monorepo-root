@@ -1,13 +1,17 @@
 FROM node:16-alpine
+
 WORKDIR /app
 
-# Copier uniquement package.json
+# Copier uniquement package.json d'abord
 COPY package.json ./
 
-# Installer les dépendances (incluant react-scripts) sans lockfile
+# Installer les dépendances (cela régénérera le lock file)
 RUN npm install
 
 # Copier le reste du code
 COPY . ./
 
-CMD ["npm","start"]
+# Exposer le port
+EXPOSE 3000
+
+CMD ["npm", "start"]
