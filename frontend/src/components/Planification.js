@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import ConservationForm from './ConservationForm';
 import ImportConservation from './ImportConservation';
@@ -193,13 +193,13 @@ export default function Planification() {
   const [showForm, setShowForm] = useState(false);
   const [showImport, setShowImport] = useState(false);
 
-  const headers = {
+  const headers = useMemo(() => ({
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`
     }
-  };
+  }), []);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       // Récupérer les plans de conservation
@@ -215,9 +215,9 @@ export default function Planification() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [headers]);
 
-  const generateRapport = async () => {
+  const generateRapport = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await axios.get(`${API_BASE_URL}/api/conservation/rapport`, headers);
@@ -228,21 +228,21 @@ export default function Planification() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [headers]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
-  const onFormSuccess = () => {
+  const onFormSuccess = useCallback(() => {
     setShowForm(false);
     fetchData();
-  };
+  }, [fetchData]);
 
-  const onImportSuccess = () => {
+  const onImportSuccess = useCallback(() => {
     setShowImport(false);
     fetchData();
-  };
+  }, [fetchData]);
 
   const tabStyle = (isActive) => ({
     padding: '10px 20px',
